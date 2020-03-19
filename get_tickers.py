@@ -41,7 +41,7 @@ def get_lastdate(symbol):
 	return date
 
 # Write to DB daily historical data for SP 100
-def update_tickers:
+def update_tickers(symbols):
 	for symbol in symbols:
 		# If the current ticker does not exist, create new table and gather data
 		if library.has_symbol(symbol) == False:
@@ -54,11 +54,24 @@ def update_tickers:
 
 		# If ticker exists, check to see if its up to date, if not append newest data
 		elif(get_lastdate(symbol) != datetime.date(datetime.now())):
-			start = get_lastdate()
-			data_ts, meta_data_ts = ts.get_daily(symbol='symbol',outputsize='full')
+			start = get_lastdate(symbol)
+			data_ts, meta_data_ts = ts.get_daily(symbol=symbol, outputsize='full')
 			new_data = data_ts[:start]
 			library.append(symbol, new_data, upsert=False)
 			print(symbol + ": Added new data")
 
-
+# Calculate momentum of the SP100 and select the stocks with the highest 5
+def get_momentum(symbols):
+	momentum = {}
+	mom_list = []
+	portfolio = []
+	for symbol in symbols:
+		item = library.read(symbol).data
+		mom = (item.iloc[0]['4. close']/item.iloc[4]['4. close'])*100
+		mom_list.append(mom)
+		momentum[mom] = symbol
+	mom_list = sorted(mom_list, reverse=True)
+	for i in range(5):
+		portfolio.append(momentum[mom_list[i]])	
+	return portfolio
 
